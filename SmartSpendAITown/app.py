@@ -6,7 +6,7 @@ app = Flask(__name__)
 N = 10  # Grid size
 grid_data = {
     'pos': [0, 0],
-    'log': []
+    'linked_account': ''
 }
 
 store_locations = {
@@ -18,7 +18,6 @@ store_locations = {
     "3,6": "De Drie Gezusters"
 }
 
-
 account_map = {
     "Groceries": "AH Budget Account",
     "Cafe": "Cafe Budget",
@@ -29,7 +28,7 @@ account_map = {
     "Other": "General Account"
 }
 
-with open("/Users/francescabrzoskowski/geocard/nvidia_api.txt", "r") as f:
+with open("nvidia_api.txt", "r") as f:
     API_KEY = f.read().strip()
 
 def classify_store_nvidia(store_name):
@@ -60,7 +59,13 @@ def classify_store_nvidia(store_name):
 
 @app.route('/')
 def index():
-    return render_template('map.html', grid_size=N, pos=grid_data['pos'], stores=store_locations, log=grid_data['log'])
+    return render_template(
+        'map.html',
+        grid_size=N,
+        pos=grid_data['pos'],
+        stores=store_locations,
+        account=grid_data['linked_account']
+    )
 
 @app.route('/move', methods=['POST'])
 def move():
@@ -78,17 +83,14 @@ def move():
         new_x = max(0, min(N - 1, x + dx))
         grid_data['pos'] = [new_y, new_x]
 
-       
         store_key = f"{new_y},{new_x}"
         if store_key in store_locations:
             store = store_locations[store_key]
             category = classify_store_nvidia(store)
             account = account_map.get(category, "General Account")
-            grid_data['log'].append(f"👟 Visited {store} → {category}. Switched to {account}.")
-#        else:
-#           grid_data['log'].append(f"➡️ Moved to ({new_y},{new_x})")
+            grid_data['linked_account'] = account
 
-    return jsonify({'pos': grid_data['pos'], 'log': grid_data['log'][-5:]})
+    return jsonify({'pos': grid_data['pos']})
 
 if __name__ == '__main__':
     app.run(debug=True)
