@@ -172,3 +172,8 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# API things
+api.txt 
+nvidia_api.txt
+context_setup.py
