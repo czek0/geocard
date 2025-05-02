@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Geocard AI Town</title>
+  <style>
+    body {
+      font-family: monospace;
+      background-color: #222;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    #grid {
+      display: grid;
+      grid-template-columns: repeat({{ grid_size }}, 48px);
+      grid-template-rows: repeat({{ grid_size }}, 48px);
+      gap: 2px;
+      margin-top: 20px;
+    }
+    .tile {
+      width: 48px;
+      height: 48px;
+      background-color: #444;
+      font-size: 28px;
+      text-align: center;
+      line-height: 48px;
+      border: 1px solid #333;
+    }
+    #log {
+      margin-top: 20px;
+      width: 80%;
+      max-width: 600px;
+      background: #111;
+      padding: 10px;
+      border-radius: 5px;
+      min-height: 100px;
+      overflow-y: auto;
+    }
+    #log p {
+      margin: 5px 0;
+    }
+    #card-ui {
+      margin-top: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .card-square {
+      width: 120px;
+      height: 120px;
+      background-color: #0074D9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      border-radius: 8px;
+      box-shadow: 0 0 8px rgba(0,0,0,0.4);
+      margin-bottom: 10px;
+    }
+    .account-text {
+      font-size: 16px;
+      color: #eee;
+    }
+  </style>
+</head>
+<body>
+  <h1>📍 Geo Town</h1>
+
+  <div id="grid"></div>
+
+  <div id="log">
+    {% for entry in log %}
+      <p>{{ entry }}</p>
+    {% endfor %}
+  </div>
+
+  <div id="card-ui">
+    <div class="card-square">💳 Debit Card</div>
+    <div class="account-text">
+      Linked to: <strong>{{ account or 'None' }}</strong>
+    </div>
+  </div>
+
+  <script>
+    const gridSize = {{ grid_size }};
+    const playerPos = {{ pos }};
+    const storeMap = {{ stores | tojson }};
+
+    const gridEl = document.getElementById("grid");
+
+    for (let y = 0; y < gridSize; y++) {
+      for (let x = 0; x < gridSize; x++) {
+        const tile = document.createElement("div");
+        tile.className = "tile";
+
+        const key = `${y},${x}`;
+        if (playerPos[0] === y && playerPos[1] === x) {
+          tile.textContent = "👧";
+        } else if (key in storeMap) {
+          tile.textContent = "🏪";
+        } else {
+          tile.textContent = "⬜";
+        }
+
+        gridEl.appendChild(tile);
+      }
+    }
+
+    document.addEventListener("keydown", function(e) {
+      const key = e.key.toUpperCase();
+      if (["W", "A", "S", "D"].includes(key)) {
+        fetch("/move", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ key: key })
+        })
+        .then(res => res.json())
+        .then(() => location.reload());
+      }
+    });
+  </script>
+</body>
+</html>
