@@ -66,7 +66,7 @@
   </div>
   <div style="margin-top: 80px; display: flex; flex-direction: row; align-items: flex-start; justify-content: center; gap: 40px; width: 100%;">
 
-<h1 style="color: #fff; font-size: 32px; margin-bottom: 20px; text-align: center; width: 100%;">Geocard AI Town</h1>
+
 <div id="grid"></div>
 
   <div id="card-ui">
@@ -82,27 +82,30 @@
     const gridSize = {{ grid_size }};
     const playerPos = {{ pos }};
     const storeMap = {{ stores | tojson }};
-
+    const accountText = document.querySelector('.account-text');
+  
     const gridEl = document.getElementById("grid");
-
-    for (let y = 0; y < gridSize; y++) {
-      for (let x = 0; x < gridSize; x++) {
-        const tile = document.createElement("div");
-        tile.className = "tile";
-
-        const key = `${y},${x}`;
-        if (playerPos[0] === y && playerPos[1] === x) {
-          tile.textContent = "👧";
-        } else if (key in storeMap) {
-          tile.textContent = "🏪";
-        } else {
-          tile.textContent = "⬜";
+    function drawGrid(pos) {
+      gridEl.innerHTML = '';
+      for (let y = 0; y < gridSize; y++) {
+        for (let x = 0; x < gridSize; x++) {
+          const tile = document.createElement("div");
+          tile.className = "tile";
+          const key = `${y},${x}`;
+          if (pos[0] === y && pos[1] === x) {
+            tile.textContent = "👧";
+          } else if (key in storeMap) {
+            tile.textContent = "🏪";
+          } else {
+            tile.textContent = "⬜";
+          }
+          gridEl.appendChild(tile);
         }
-
-        gridEl.appendChild(tile);
       }
     }
-
+  
+    drawGrid(playerPos);
+  
     document.addEventListener("keydown", function(e) {
       const key = e.key.toUpperCase();
       if (["W", "A", "S", "D"].includes(key)) {
@@ -112,9 +115,13 @@
           body: JSON.stringify({ key: key })
         })
         .then(res => res.json())
-        .then(() => location.reload());
+        .then(data => {
+          drawGrid(data.pos);
+          accountText.textContent = "Linked to: " + data.account;
+        });
       }
     });
   </script>
+  
 </body>
 </html>
