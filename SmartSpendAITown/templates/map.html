@@ -2,18 +2,28 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Geocard AI Town</title>
+  <title>GeoCard AI Town</title>
   <style>
     body {
       font-family: monospace;
       background-color: #222;
       color: #fff;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      text-align: center;
+      padding: 20px;
+      background-color: #111;
+      font-size: 24px;
+      font-weight: bold;
+    }
+    .container {
       display: flex;
-      flex-direction: row;
-      align-items: flex-start;
       justify-content: center;
+      align-items: flex-start;
       gap: 40px;
-      padding-top: 40px;
+      padding: 40px;
     }
     #grid {
       display: grid;
@@ -30,50 +40,85 @@
       line-height: 48px;
       border: 1px solid #333;
     }
-    #card-ui {
+    #sidebar {
+      width: 300px;
       display: flex;
       flex-direction: column;
-      align-items: center;
+      gap: 20px;
     }
     .card-square {
-      width: 300px;
-      height: 180px;
       background-color: #0074D9;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      font-size: 20px;
       border-radius: 12px;
-      box-shadow: 0 0 12px rgba(0,0,0,0.4);
-      color: #fff;
-      text-align: center;
       padding: 20px;
+      text-align: center;
+      box-shadow: 0 0 12px rgba(0,0,0,0.4);
     }
     .card-title {
-      font-size: 28px;
+      font-size: 22px;
       margin-bottom: 10px;
     }
     .account-text {
-      font-size: 18px;
       font-weight: bold;
+      font-size: 18px;
+    }
+    .profile {
+      background-color: #333;
+      border-radius: 10px;
+      padding: 15px;
+    }
+    .profile h3, .accounts h3, .log h3 {
+      margin: 0 0 10px;
+      font-size: 18px;
+      border-bottom: 1px solid #444;
+    }
+    .accounts {
+      background-color: #333;
+      border-radius: 10px;
+      padding: 15px;
+    }
+    .log {
+      background-color: #333;
+      border-radius: 10px;
+      padding: 15px;
+      font-size: 14px;
+      height: 100px;
+      overflow-y: auto;
     }
   </style>
 </head>
 <body>
-  <div style="width: 100%; text-align: center; position: fixed; top: 0; padding: 10px 0; background-color: #222; z-index: 1000;">
-    
-  </div>
-  <div style="margin-top: 80px; display: flex; flex-direction: row; align-items: flex-start; justify-content: center; gap: 40px; width: 100%;">
+  <header>🌍 GeoCard AI Town</header>
 
+  <div class="container">
+    <div id="grid"></div>
 
-<div id="grid"></div>
+    <div id="sidebar">
+      <div class="profile">
+        <h3>👧 Character</h3>
+        <p>Name: Budget Babe</p>
+        <p>Net Worth: €{{ net_worth }}</p>
+        <p>Mood: {{ mood or "💡 Budget-empowered" }}</p>
+      </div>
 
-  <div id="card-ui">
-    <div class="card-square">
-      <div class="card-title">💳 Debit Card</div>
-      <div class="account-text">
-        Linked to: {{ account or 'None' }}
+      <div class="card-square">
+        <div class="card-title">💳 Debit Card</div>
+        <div class="account-text">Linked to: {{ account or 'None' }}</div>
+      </div>
+
+      <div class="accounts">
+        <h3>🏦 Accounts</h3>
+        <ul style="list-style: none; padding-left: 0;">
+        {% for acc in accounts %}
+          <li>{{ acc.emoji }} {{ acc.name }}: €{{ acc.balance }}</li>
+        {% endfor %}
+        </ul>
+      </div>
+
+      <div class="log">
+        <h3>🧠 AI Actions</h3>
+        {% for entry in log %}
+          <p>{{ entry }}</p>
+        {% endfor %}
       </div>
     </div>
   </div>
@@ -82,9 +127,8 @@
     const gridSize = {{ grid_size }};
     const playerPos = {{ pos }};
     const storeMap = {{ stores | tojson }};
-    const accountText = document.querySelector('.account-text');
-  
     const gridEl = document.getElementById("grid");
+
     function drawGrid(pos) {
       gridEl.innerHTML = '';
       for (let y = 0; y < gridSize; y++) {
@@ -103,9 +147,9 @@
         }
       }
     }
-  
+
     drawGrid(playerPos);
-  
+
     document.addEventListener("keydown", function(e) {
       const key = e.key.toUpperCase();
       if (["W", "A", "S", "D"].includes(key)) {
@@ -117,11 +161,10 @@
         .then(res => res.json())
         .then(data => {
           drawGrid(data.pos);
-          accountText.textContent = "Linked to: " + data.account;
+          document.querySelector('.account-text').textContent = "Linked to: " + data.account;
         });
       }
     });
   </script>
-  
 </body>
 </html>

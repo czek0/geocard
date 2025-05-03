@@ -12,9 +12,15 @@ N = 10  # Grid size
 
 grid_data = {'pos': [0, 0]}
 store_locations = {
-    "2,3": "Starbucks", "1,1": "Albert Heijn", "5,5": "Zara",
-    "7,2": "Etos", "8,8": "Planet Fitness", "3,6": "De Drie Gezusters"
+    "2,3": "Starbucks",
+    "1,1": "Albert Heijn",
+    "5,5": "Zara",
+    "7,2": "Etos",
+    "8,8": "Spa",
+    "3,6": "Tulip Cafe",
+    "4,5": "Hair Salon"
 }
+
 
 categories = ["groceries", "cafe", "shopping", "skincare", "fitness", "nightlife", "other"]
 category_to_account_id = {}
@@ -48,7 +54,7 @@ category_to_account_id = {}
 # Output the final mapping
 if not accounts:
     for cat in categories:
-        print(f"Creating account: {category}")
+        print(f"Creating account: {cat}")
         
         new_account_response = MonetaryAccountBankApiObject.create(
             currency="EUR",
@@ -118,7 +124,39 @@ def classify_store_nvidia(store_name):
 
 @app.route('/')
 def index():
-    return render_template('map.html', grid_size=N, pos=grid_data['pos'], stores=store_locations)
+    # Fetch balances to render live accounts
+    accounts = MonetaryAccountBankApiObject.list().value
+    display_accounts = []
+    total = 0.0
+
+    all_accounts = MonetaryAccountBankApiObject.list().value
+    display_accounts = []
+    total = 0.0
+
+    for acc in all_accounts:
+        if acc.status != "ACTIVE":
+            continue  # Skip archived/blocked accounts
+
+        balance = float(acc.balance.value)
+        total += balance
+        display_accounts.append({
+            "id": acc.id_,
+            "name": acc.description,
+            "balance": f"{balance:.2f}",
+            "emoji": "💰" if balance > 0 else "⚠️"
+        })
+
+
+    return render_template('map.html',
+        grid_size=N,
+        pos=grid_data['pos'],
+        stores=store_locations,
+        net_worth=f"{total:.2f}",
+        account=grid_data.get('linked_account', 'None'),
+        accounts=display_accounts,
+        mood=grid_data.get('mood', "💡 Budget-empowered"),
+        log=grid_data.get('log', [])
+    )
 
 @app.route('/move', methods=['POST'])
 def move():
@@ -137,14 +175,15 @@ def move():
             category = classify_store_nvidia(store)
             account_id = category_to_account_id.get(category, primary_account.id_)
 
-            # Update fallback account
             CardApiObject.update(
                 card_id=card_id,
                 monetary_account_id_fallback=account_id
             )
 
-            # Set for rendering
             grid_data['linked_account'] = category.capitalize()
+            grid_data['log'] = [f"Visited {store} → {category}. Card linked to {category.capitalize()}."]
+        else:
+            grid_data['log'] = []
 
     return jsonify({
         'pos': grid_data['pos'],
