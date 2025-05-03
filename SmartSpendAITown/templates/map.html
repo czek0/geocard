@@ -104,9 +104,14 @@
       border-radius: 10px;
       padding: 15px;
       font-size: 14px;
-      height: 100px;
+      margin-top: 20px;
+      width: calc(48px * {{ grid_size }});
+      max-width: 100%;
       overflow-y: auto;
+      min-height: 120px;
+      max-height: 200px;
     }
+
     #grid-wrapper {
       position: relative;
       width: calc(48px * {{ grid_size }});
@@ -142,27 +147,47 @@
       border: none;
       pointer-events: none;
     }
+    .demo-description {
+      text-align: center;
+      font-size: 16px;
+      padding: 10px 20px;
+      background-color: #333;
+      margin: 0;
+      color: #ccc;
+    }
+
 
   </style>
 </head>
 <body>
   <header>🌍 GeoCard AI Town</header>
+  <p class="demo-description">
+    💡 GeoCard automatically links your debit card to the right budget — based on where you are in town. 
+    Move around using your arrow keys (W A S D) and watch your card switch before you pay.
+  </p>
 
   <div class="container">
-    <div id="grid-wrapper">
-      <img src="{{ url_for('static', filename='images/map.svg') }}" id="map-image" alt="Town Map">
-      <div id="grid"></div>
+    <div class="main-column">
+      <div id="grid-wrapper">
+        <img src="{{ url_for('static', filename='images/map.svg') }}" id="map-image" alt="Town Map">
+        <div id="grid"></div>
+      </div>
+  
+      <div class="log" id="log-panel">
+        <h3>🧠 AI Actions</h3>
+        {% for entry in log %}
+          <p>{{ entry }}</p>
+        {% endfor %}
+      </div>
     </div>
-    
 
     <div id="sidebar">
       <div class="profile">
         <h3>👧 Character</h3>
         <p>Name: Budget Babe</p>
         <p>Net Worth: €{{ net_worth }}</p>
-        <p>Mood: {{ mood or "💡 Budget-empowered" }}</p>
+        <p id="geo-label">📍 Location: {{ geo }}</p>
       </div>
-
       <div class="card-svg" style="position: relative;">
         <img src="{{ url_for('static', filename='images/debitcard.svg') }}" alt="Card" style="width: 100%; border-radius: 12px;">
         <div class="account-overlay">{{ account or 'None' }}</div>
@@ -177,15 +202,10 @@
         {% endfor %}
         </ul>
       </div>
-
-      <div class="log">
-        <h3>🧠 AI Actions</h3>
-        {% for entry in log %}
-          <p>{{ entry }}</p>
-        {% endfor %}
-      </div>      
     </div>
   </div>
+  
+
 
   <script>
     const gridSize = {{ grid_size }};
@@ -228,13 +248,18 @@
         .then(res => res.json())
         .then(data => {
           drawGrid(data.pos);
-          document.querySelector('.account-overlay').textContent = data.account;
+          document.querySelector('.account-overlay').textContent = "Linked to: " + data.account;
 
           const logDiv = document.querySelector('.log');
           if (logDiv && data.log && Array.isArray(data.log)) {
             logDiv.innerHTML = "<h3>🧠 AI Actions</h3>" + data.log.map(line => `<p>${line}</p>`).join("");
           }
-        })
+
+          const geoLabel = document.getElementById("geo-label");
+          if (geoLabel && data.geo) {
+            geoLabel.textContent = "📍 Location: " + data.geo;
+          }
+        });
       }
     });
   </script>

@@ -165,19 +165,22 @@ def index():
         account=grid_data.get('linked_account', 'None'),
         accounts=display_accounts,
         mood=grid_data.get('mood', "💡 Budget-empowered"),
-        log=grid_data.get('log', [])
+        log=grid_data.get('log', []),
+        geo=grid_data.get('pos', '')
     )
 
 @app.route('/move', methods=['POST'])
 def move():
     key = request.json.get('key')
     move_map = {'W': (-1, 0), 'A': (0, -1), 'S': (1, 0), 'D': (0, 1)}
+
     if key in move_map:
         dy, dx = move_map[key]
         y, x = grid_data['pos']
         new_y = max(0, min(N - 1, y + dy))
         new_x = max(0, min(N - 1, x + dx))
         grid_data['pos'] = [new_y, new_x]
+        grid_data['geo_location'] = f"{new_y},{new_x}" 
 
         store_key = f"{new_y},{new_x}"
         if store_key in store_locations:
@@ -191,16 +194,19 @@ def move():
             )
 
             grid_data['linked_account'] = category.capitalize()
-            grid_data['log'] = [f"Visited {store} → {category}. Card linked to {category.capitalize()}."]
+            grid_data['log'] = [
+                f"Visited {store} → {category}.",
+                f"Linked to {category.capitalize()} account."
+            ]
         else:
-            grid_data['log'] = [""]
+            grid_data['log'] = []
 
     return jsonify({
-    'pos': grid_data['pos'],
-    'account': grid_data.get('linked_account', 'None'),
-    'log': grid_data.get('log', [])
-})
-
+        'pos': grid_data['pos'],
+        'account': grid_data.get('linked_account', 'None'),
+        'log': grid_data.get('log', []),
+        'geo': grid_data.get('geo_location', '')
+    })
 
 if __name__ == '__main__':
     app.run(debug=True)
