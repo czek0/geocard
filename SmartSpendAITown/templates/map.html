@@ -119,7 +119,7 @@
         {% for entry in log %}
           <p>{{ entry }}</p>
         {% endfor %}
-      </div>
+      </div>      
     </div>
   </div>
 
@@ -162,7 +162,12 @@
         .then(data => {
           drawGrid(data.pos);
           document.querySelector('.account-text').textContent = "Linked to: " + data.account;
-        });
+
+          const logDiv = document.querySelector('.log');
+          if (logDiv && data.log && Array.isArray(data.log)) {
+            logDiv.innerHTML = "<h3>🧠 AI Actions</h3>" + data.log.map(line => `<p>${line}</p>`).join("");
+          }
+        })
       }
     });
   </script>

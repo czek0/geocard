@@ -183,12 +183,14 @@ def move():
             grid_data['linked_account'] = category.capitalize()
             grid_data['log'] = [f"Visited {store} → {category}. Card linked to {category.capitalize()}."]
         else:
-            grid_data['log'] = []
+            grid_data['log'] = [""]
 
     return jsonify({
-        'pos': grid_data['pos'],
-        'account': grid_data.get('linked_account', 'None')
-    })
+    'pos': grid_data['pos'],
+    'account': grid_data.get('linked_account', 'None'),
+    'log': grid_data.get('log', [])
+})
+
 
 if __name__ == '__main__':
     app.run(debug=True)
