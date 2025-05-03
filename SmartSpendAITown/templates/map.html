@@ -18,6 +18,12 @@
       font-size: 24px;
       font-weight: bold;
     }
+    .tile img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
     .container {
       display: flex;
       justify-content: center;
@@ -57,6 +63,23 @@
       font-size: 22px;
       margin-bottom: 10px;
     }
+    .card-svg {
+      width: 300px;
+      position: relative;
+    }
+
+    .account-overlay {
+      position: absolute;
+      top: 200px;
+      right: 20px;  /* Align text to the right side */
+      font-size: 18px;
+      font-weight: bold;
+      color: white;
+      text-shadow: 1px 1px 3px black;
+      text-align: right;
+    }
+
+
     .account-text {
       font-weight: bold;
       font-size: 18px;
@@ -84,13 +107,53 @@
       height: 100px;
       overflow-y: auto;
     }
+    #grid-wrapper {
+      position: relative;
+      width: calc(48px * {{ grid_size }});
+      height: calc(48px * {{ grid_size }});
+    }
+    #map-image {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+    }
+    #grid {
+      position: absolute;
+      top: 0;
+      left: 0;
+      display: grid;
+      grid-template-columns: repeat({{ grid_size }}, 48px);
+      grid-template-rows: repeat({{ grid_size }}, 48px);
+      gap: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 2;
+    }
+    .tile {
+      width: 48px;
+      height: 48px;
+      background-color: transparent;
+      font-size: 28px;
+      text-align: center;
+      line-height: 48px;
+      border: none;
+      pointer-events: none;
+    }
+
   </style>
 </head>
 <body>
   <header>🌍 GeoCard AI Town</header>
 
   <div class="container">
-    <div id="grid"></div>
+    <div id="grid-wrapper">
+      <img src="{{ url_for('static', filename='images/map.svg') }}" id="map-image" alt="Town Map">
+      <div id="grid"></div>
+    </div>
+    
 
     <div id="sidebar">
       <div class="profile">
@@ -100,10 +163,11 @@
         <p>Mood: {{ mood or "💡 Budget-empowered" }}</p>
       </div>
 
-      <div class="card-square">
-        <div class="card-title">💳 Debit Card</div>
-        <div class="account-text">Linked to: {{ account or 'None' }}</div>
+      <div class="card-svg" style="position: relative;">
+        <img src="{{ url_for('static', filename='images/debitcard.svg') }}" alt="Card" style="width: 100%; border-radius: 12px;">
+        <div class="account-overlay">{{ account or 'None' }}</div>
       </div>
+      
 
       <div class="accounts">
         <h3>🏦 Accounts</h3>
@@ -137,11 +201,14 @@
           tile.className = "tile";
           const key = `${y},${x}`;
           if (pos[0] === y && pos[1] === x) {
-            tile.textContent = "👧";
+            const img = document.createElement("img");
+            img.src = "{{ url_for('static', filename='images/budgetbabe.svg') }}";
+            img.alt = "👧";
+            tile.appendChild(img);
           } else if (key in storeMap) {
             tile.textContent = "🏪";
           } else {
-            tile.textContent = "⬜";
+            // Leave tile empty
           }
           gridEl.appendChild(tile);
         }
@@ -161,7 +228,7 @@
         .then(res => res.json())
         .then(data => {
           drawGrid(data.pos);
-          document.querySelector('.account-text').textContent = "Linked to: " + data.account;
+          document.querySelector('.account-overlay').textContent = data.account;
 
           const logDiv = document.querySelector('.log');
           if (logDiv && data.log && Array.isArray(data.log)) {

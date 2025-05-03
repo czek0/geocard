@@ -21,12 +21,21 @@ store_locations = {
     "4,5": "Hair Salon"
 }
 
+fake_balances = {
+    "Groceries": 43.21,
+    "Cafe": 18.75,
+    "Shopping": 129.99,
+    "Skincare": 64.50,
+    "Fitness": 80.00,
+    "Nightlife": 25.00,
+    "Other": 12.00
+}
 
 categories = ["groceries", "cafe", "shopping", "skincare", "fitness", "nightlife", "other"]
 category_to_account_id = {}
 
 # Load API key
-with open("api.txt", "r") as f:
+with open("/Users/francescabrzoskowski/geocard/api.txt", "r") as f:
     api_key = f.read().strip()
 
 # Create an API context for production
@@ -86,7 +95,7 @@ else:
     card_id = cards[0].id_
 
 # NVIDIA classification
-with open("nvidia_api.txt", "r") as f:
+with open("/Users/francescabrzoskowski/geocard/nvidia_api.txt", "r") as f:
     API_KEY = f.read().strip()
 
 def classify_store_nvidia(store_name):
@@ -137,7 +146,8 @@ def index():
         if acc.status != "ACTIVE":
             continue  # Skip archived/blocked accounts
 
-        balance = float(acc.balance.value)
+        name = acc.description
+        balance = fake_balances.get(name, 0.00)
         total += balance
         display_accounts.append({
             "id": acc.id_,
