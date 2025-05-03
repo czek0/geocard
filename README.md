@@ -22,10 +22,7 @@ She's the star of GeoCard AI Town — walking around town, visiting cafés and s
 
 ![Budgetbabe](budgetbabe.png)
 
-```
-https://dull-clouds-warn.loca.lt
-password: 217.123.17.6
-```
+
 
 ---
 
