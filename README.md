@@ -18,9 +18,9 @@ Try it out in **GeoCard AI Town**!
 
 She's the star of GeoCard AI Town — walking around town, visiting cafés and shops, and letting her card think for her.
 
-<p align="center">
-  <img src="SmartspendAITown/static/images/budgetbabe.svg" width="80" alt="BudgetBabe sprite">
-</p>
+
+
+![Budgetbabe](budgetbabe.png)
 
 ```
 https://dull-clouds-warn.loca.lt
